@@ -1,6 +1,8 @@
 package com.aliments.hateosswaggerrest.user;
 
 import jakarta.validation.Valid;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -21,12 +23,16 @@ public class OrkutUserController {
     }
 
     @GetMapping("/users/{id}")
-    public OrkutUser getUser(@PathVariable int id) {
+    public EntityModel<OrkutUser> getUser(@PathVariable int id) {
         OrkutUser user = orkutUserDAO.findOne(id);
         if(user == null) {
             throw new UserNotFoundException("id: " + id);
         }
-        return orkutUserDAO.findOne(id);
+        EntityModel<OrkutUser> entityModel = EntityModel.of(user);
+        WebMvcLinkBuilder webMvcLinkBuilder = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllUsers());
+        entityModel.add(webMvcLinkBuilder.withRel("all-users"));
+
+        return entityModel;
     }
 
     @DeleteMapping("/users/{id}")
