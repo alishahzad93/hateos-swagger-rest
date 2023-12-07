@@ -1,9 +1,14 @@
 package com.aliments.hateosswaggerrest.user;
 
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.PropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -33,6 +38,16 @@ public class OrkutUserController {
         entityModel.add(webMvcLinkBuilder.withRel("all-users"));
 
         return entityModel;
+    }
+    @GetMapping("/users/filter/{id}") //Dynamic filtering
+    public MappingJacksonValue getFilteredUser(@PathVariable int id) {
+        OrkutUser user = orkutUserDAO.findOne(id);
+        MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(user);
+        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "user_name");
+        FilterProvider filters = new SimpleFilterProvider().addFilter("OrkutUserFilter", filter);
+        mappingJacksonValue.setFilters(filters);
+
+        return mappingJacksonValue;
     }
 
     @DeleteMapping("/users/{id}")
